@@ -2,22 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MicroCmsPost } from "@/app/_types/MicroCmsPost";
+import { Post } from "./_types/Post";
 
 const Home: React.FC = () => {
-  const [posts, setPosts] = useState<MicroCmsPost[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const fetchData = async () => {
     try {
-      const res = await fetch("https://058kjqhvdy.microcms.io/api/v1/posts", {
-        headers: {
-          "X-MICROCMS-API-KEY": process.env
-            .NEXT_PUBLIC_MICROCMS_API_KEY as string,
-        },
-      });
-      const { contents } = await res.json();
-      setPosts(contents);
+      const res = await fetch("http://localhost:3000/api/posts");
+      const { posts } = await res.json();
+      setPosts(posts);
     } catch (error) {
       console.log(error);
     } finally {
@@ -32,7 +27,7 @@ const Home: React.FC = () => {
   if (isLoading) return <div>読み込み中...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto mt-10">
+    <div className="max-w-3xl mx-auto mt-24 mb-10">
       <ul className="flex flex-col gap-5">
         {posts.map((post) => (
           <li key={post.id} className="border border-gray-300 p-4">
@@ -45,12 +40,12 @@ const Home: React.FC = () => {
                     </div>
                     <div>
                       <div className="flex gap-2">
-                        {post.categories.map((category, index) => (
+                        {post.postCategories.map((category, index) => (
                           <div
                             key={index}
                             className="border border-blue-500 p-1 text-sm rounded text-blue-500"
                           >
-                            {category.name}
+                            {category.category.name}
                           </div>
                         ))}
                       </div>

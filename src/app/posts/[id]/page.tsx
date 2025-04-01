@@ -1,27 +1,19 @@
 "use client";
 
-import { MicroCmsPost } from "@/app/_types/MicroCmsPost";
+import { Post } from "@/app/_types/Post";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const PostDetail = ({ params }: { params: { id: string } }) => {
-  const [post, setPost] = useState<MicroCmsPost | null>(null);
+  const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetcher = async () => {
       setIsLoading(true);
-      const res = await fetch(
-        `https://058kjqhvdy.microcms.io/api/v1/posts/${params.id}`,
-        {
-          headers: {
-            "X-MICROCMS-API-KEY": process.env
-              .NEXT_PUBLIC_MICROCMS_API_KEY as string,
-          },
-        }
-      );
-      const data = await res.json();
-      setPost(data);
+      const res = await fetch(`http://localhost:3000/api/posts/${params.id}`);
+      const { post } = await res.json();
+      setPost(post);
       setIsLoading(false);
     };
 
@@ -32,11 +24,11 @@ const PostDetail = ({ params }: { params: { id: string } }) => {
   if (!post) return <div>記事が見つかりません</div>;
 
   return (
-    <div className="max-w-3xl mx-auto mt-10">
+    <div className="max-w-3xl mx-auto mt-24 mb-10">
       <div>
         <div>
           <Image
-            src={post.thumbnail.url}
+            src={post.thumbnailUrl}
             alt={post.title}
             height={400}
             width={800}
@@ -49,12 +41,12 @@ const PostDetail = ({ params }: { params: { id: string } }) => {
             </div>
             <div>
               <div className="flex gap-2">
-                {post.categories.map((category, index) => (
+                {post.postCategories.map((category, index) => (
                   <div
                     key={index}
                     className="border border-blue-500 p-1 text-sm rounded text-blue-500"
                   >
-                    {category.name}
+                    {category.category.name}
                   </div>
                 ))}
               </div>
