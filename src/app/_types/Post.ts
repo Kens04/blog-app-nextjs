@@ -1,16 +1,10 @@
-export type Post = {
-  id: number;
-  thumbnailUrl: string;
-  createdAt: Date;
-  categories: string[];
+export interface Post {
+  id: string;
   title: string;
   content: string;
-};
-
-export type PostResponse = {
-  post: Post;
-};
-
-export type PostsResponse = {
-  posts: Post[];
-};
+  createdAt: string;
+  postCategories: {
+    category: { name: string };
+  }[];
+  thumbnailUrl: string;
+}
