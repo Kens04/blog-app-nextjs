@@ -1,30 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Category } from "./_types/Category";
+import useSWR from "swr";
+
+async function fetcher(key: string) {
+  return fetch(key).then((res) => res.json() as Promise<Category | null>);
+}
 
 const AdminCategories: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const fetchData = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/admin/categories");
-      const { categories } = await res.json();
-      setCategories(categories);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { data, error, isLoading } = useSWR(
+    "http://localhost:3000/api/admin/categories",
+    fetcher
+  );
 
   if (isLoading) return <div>読み込み中...</div>;
+  if (error) return <div>読み込みに失敗しました。</div>;
 
   return (
     <div className="p-5 w-full">
@@ -39,10 +30,10 @@ const AdminCategories: React.FC = () => {
           </Link>
         </div>
       </div>
-      {categories.length > 0 ? (
+      {(data?.categories ?? []).length > 0 ? (
         <div className="mt-10">
           <ul className="flex flex-col gap-4">
-            {categories.map((category) => (
+            {data?.categories.map((category) => (
               <li key={category.id} className="border-b font-bold pb-2">
                 <Link
                   className="hover:text-red-700 transition"
