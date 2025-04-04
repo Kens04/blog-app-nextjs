@@ -3,7 +3,7 @@ import { Category } from "../../categories/_types/Category";
 export interface AdminPost {
   title: string;
   content: string;
-  categories: Category[];
+  categories: Category[] | string & string[];
   categoryName: object;
   thumbnailUrl: string;
 }

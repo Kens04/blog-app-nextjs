@@ -7,4 +7,6 @@ export interface Post {
     category: { name: string };
   }[];
   thumbnailUrl: string;
+  posts: Post[];
+  post: Post;
 }

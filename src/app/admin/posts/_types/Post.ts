@@ -2,8 +2,12 @@ export interface Post {
   id: number;
   title: string;
   content: string;
-  categories: { id: number }[];
+  postCategories: {
+    category: { id: string };
+  }[];
   thumbnailUrl: string;
   createdAt: Date;
   updatedAt: Date;
+  posts: Post[];
+  post: Post;
 }
