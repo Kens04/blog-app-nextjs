@@ -1,26 +1,34 @@
 import { Category } from "../_types/Category";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 interface FormProps {
   mode: string;
   name?: string;
   setName?: (name: string) => void;
-  handleDeleteCategory?: () => void;
+  onDeleteCategory?: () => void;
   onSubmit: SubmitHandler<Category>;
 }
 
 export const AdminCategoryForm = ({
   mode,
   name,
-  setName,
-  handleDeleteCategory,
+  onDeleteCategory,
   onSubmit,
 }: FormProps) => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<Category>();
+
+  useEffect(() => {
+    reset({
+      name,
+    });
+  }, [name]);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="flex flex-col">
@@ -32,13 +40,11 @@ export const AdminCategoryForm = ({
           className="border rounded h-12 p-2"
           id="name"
           type="text"
-          value={name}
+          placeholder="カテゴリー名を入力してください"
           {...register("name", {
             required: "カテゴリー名を入力してください",
             minLength: { value: 2, message: "2文字以上入力してください" },
           })}
-          onChange={(e) => setName?.(e.target.value)}
-          placeholder="カテゴリー名を入力してください"
         />
         {errors.name && <p className="text-red-700">{errors.name.message}</p>}
       </div>
@@ -53,7 +59,7 @@ export const AdminCategoryForm = ({
             </button>
             <button
               type="button"
-              onClick={handleDeleteCategory}
+              onClick={onDeleteCategory}
               className="bg-red-500 text-white py-2 px-4 rounded font-bold hover:bg-red-700 transition"
             >
               削除
