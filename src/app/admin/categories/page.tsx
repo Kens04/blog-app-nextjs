@@ -2,16 +2,11 @@
 
 import Link from "next/link";
 import { Category } from "./_types/Category";
-import useSWR from "swr";
-
-async function fetcher(key: string) {
-  return fetch(key).then((res) => res.json() as Promise<Category | null>);
-}
+import { useDataFetch } from "@/app/_hooks/useDataFetch";
 
 const AdminCategories: React.FC = () => {
-  const { data, error, isLoading } = useSWR(
-    "http://localhost:3000/api/admin/categories",
-    fetcher
+  const { data, error, isLoading } = useDataFetch<Category>(
+    "http://localhost:3000/api/admin/categories"
   );
 
   if (isLoading) return <div>読み込み中...</div>;

@@ -1,30 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { Category } from "../_types/Category";
 import { AdminCategoryForm } from "../_components/AdminCategoryForm";
+import { useDataFetch } from "@/app/_hooks/useDataFetch";
 
 const AdminEditCategories = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
-  const [name, setName] = useState<string>("");
 
-  const fetchData = async () => {
-    try {
-      const res = await fetch(
-        `http://localhost:3000/api/admin/categories/${params.id}`
-      );
-      const { category } = await res.json();
-      setName(category.name);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // カテゴリー取得
+  const { data } = useDataFetch<Category>(`http://localhost:3000/api/admin/categories/${params.id}`);
 
   const onSubmit: SubmitHandler<Category> = async (data) => {
     const { name } = data;
@@ -72,10 +58,9 @@ const AdminEditCategories = ({ params }: { params: { id: string } }) => {
       <div className="mt-5">
         <AdminCategoryForm
           mode="編集"
-          name={name}
-          setName={setName}
+          name={data?.category.name}
           onSubmit={onSubmit}
-          handleDeleteCategory={handleDeleteCategory}
+          onDeleteCategory={handleDeleteCategory}
         />
       </div>
     </div>

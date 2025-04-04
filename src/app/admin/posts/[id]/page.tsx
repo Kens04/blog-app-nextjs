@@ -1,57 +1,31 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { AdminPost } from "../_types/AdminPost";
-import { Category } from "../../categories/_types/Category";
 import { AdminPostForm } from "../_components/AdminPostForm";
+import { Post } from "../_types/Post";
+import { useDataFetch } from "@/app/_hooks/useDataFetch";
 
 const AdminPostDetail = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
-  const [title, setTitle] = useState<string>("");
-  const [content, setContent] = useState<string>("");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryName, setCategoryName] = useState<object>({});
-  const [selectCategories, setSelectCategories] = useState<string[]>([]);
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
-
-  // カテゴリー一覧取得
-  const fetchData = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/admin/categories");
-      const { categories } = await res.json();
-      setCategories(categories);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // 記事詳細取得
-  useEffect(() => {
-    const fetcher = async () => {
-      const res = await fetch(
-        `http://localhost:3000/api/admin/posts/${params.id}`
-      );
-      const { post } = await res.json();
-      setTitle(post.title);
-      setContent(post.content);
-      const categoryId = post.postCategories.map(
-        (category: { categoryId: number }) => category.categoryId
-      );
-      setSelectCategories(categoryId);
-      setThumbnailUrl(post.thumbnailUrl);
-    };
+  const { data: posts } = useDataFetch<Post>(
+    `http://localhost:3000/api/admin/posts/${params.id}`
+  );
 
-    fetcher();
-  }, [params.id]);
+  const categoryId = posts?.post.postCategories.map(
+    (item: { category: { id: string } }) => item.category.id
+  );
 
   const onSubmit: SubmitHandler<AdminPost> = async (data) => {
-    const { title, content, thumbnailUrl } = data;
+    const { title, content, categories, thumbnailUrl } = data;
+
+    const categoryObjects = categories.map((id) => ({
+      id: Number(id),
+    }));
+
     try {
       const res = await fetch(
         `http://localhost:3000/api/admin/posts/${params.id}`,
@@ -63,7 +37,7 @@ const AdminPostDetail = ({ params }: { params: { id: string } }) => {
           body: JSON.stringify({
             title,
             content,
-            categories: categoryName,
+            categories: categoryObjects,
             thumbnailUrl,
           }),
         }
@@ -98,15 +72,10 @@ const AdminPostDetail = ({ params }: { params: { id: string } }) => {
       <div className="mt-5">
         <AdminPostForm
           mode="編集"
-          title={title}
-          setTitle={setTitle}
-          content={content}
-          setContent={setContent}
-          categories={categories}
-          setCategoryName={setCategoryName}
-          selectCategories={selectCategories}
-          thumbnailUrl={thumbnailUrl}
-          setThumbnailUrl={setThumbnailUrl}
+          title={posts?.post.title}
+          content={posts?.post.content}
+          selectCategories={categoryId}
+          thumbnailUrl={posts?.post.thumbnailUrl}
           handleDeleteArticle={handleDeleteArticle}
           onSubmit={onSubmit}
         />

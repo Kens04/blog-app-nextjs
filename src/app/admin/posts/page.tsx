@@ -1,29 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Post } from "./_types/Post";
+import { useDataFetch } from "@/app/_hooks/useDataFetch";
 
 const AdminPosts: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { data, error, isLoading } = useDataFetch<Post>(
+    "http://localhost:3000/api/admin/posts"
+  );
 
-  const fetchData = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/admin/posts");
-      const { posts } = await res.json();
-      setPosts(posts);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
+  if (error) return <div>読み込みに失敗しました。</div>;
   if (isLoading) return <div>読み込み中...</div>;
 
   return (
@@ -39,23 +25,27 @@ const AdminPosts: React.FC = () => {
           </Link>
         </div>
       </div>
-      <div className="mt-10">
-        <ul className="flex flex-col gap-4">
-          {posts.map((post) => (
-            <li key={post.id} className="font-bold">
-              <Link
-                className="hover:text-red-700 transition pb-2 border-b block"
-                href={`/admin/posts/${post.id}`}
-              >
-                <h2 className="font-bold">{post.title}</h2>
-                <time className="text-slate-500">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </time>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {(data?.posts ?? []).length > 0 ? (
+        <div className="mt-10">
+          <ul className="flex flex-col gap-4">
+            {data?.posts.map((post) => (
+              <li key={post.id} className="font-bold">
+                <Link
+                  className="hover:text-red-700 transition pb-2 border-b block"
+                  href={`/admin/posts/${post.id}`}
+                >
+                  <h2 className="font-bold">{post.title}</h2>
+                  <time className="text-slate-500">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </time>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="mt-10">記事はありません。</div>
+      )}
     </div>
   );
 };
