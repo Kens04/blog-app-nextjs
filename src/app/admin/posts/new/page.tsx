@@ -1,34 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { AdminPost } from "../_types/AdminPost";
-import { Category } from "../../categories/_types/Category";
 import { AdminPostForm } from "../_components/AdminPostForm";
 
 const AdminPostNew: React.FC = () => {
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryName, setCategoryName] = useState<object>({});
-
-  // カテゴリー一覧取得
-  const fetchData = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/admin/categories");
-      const { categories } = await res.json();
-      setCategories(categories);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const onSubmit: SubmitHandler<AdminPost> = async (data) => {
-    const { title, content, thumbnailUrl } = data;
+    const { title, content, categories, thumbnailUrl } = data;
+
+    // 文字列型の配列から、各要素を数値のidプロパティを持つオブジェクトの配列に変更
+    // 例：["36"]→[{id: 36}]
+    const arrayCategories = categories.map((category) => ({
+      id: Number(category),
+    }));
+
     try {
       const res = await fetch("http://localhost:3000/api/admin/posts", {
         method: "POST",
@@ -38,7 +26,7 @@ const AdminPostNew: React.FC = () => {
         body: JSON.stringify({
           title,
           content,
-          categories: categoryName,
+          categories: arrayCategories,
           thumbnailUrl,
         }),
       });
@@ -57,8 +45,6 @@ const AdminPostNew: React.FC = () => {
       <div className="mt-5">
         <AdminPostForm
           mode="作成"
-          categories={categories}
-          setCategoryName={setCategoryName}
           onSubmit={onSubmit}
         />
       </div>

@@ -1,18 +1,15 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { AdminPost } from "../_types/AdminPost";
 import { Category } from "../../categories/_types/Category";
+import { useEffect } from "react";
+import { useDataFetch } from "@/app/_hooks/useDataFetch";
 
 interface FormProps {
   mode: string;
   title?: string;
   content?: string;
-  categories: Category[];
-  setTitle?: (title: string) => void;
-  setContent?: (content: string) => void;
-  setCategoryName: (id: { id: number }[]) => void;
   selectCategories?: string[];
   thumbnailUrl?: string;
-  setThumbnailUrl?: (thumbnailUrl: string) => void;
   handleDeleteArticle?: () => void;
   onSubmit: SubmitHandler<AdminPost>;
 }
@@ -21,21 +18,31 @@ export const AdminPostForm = ({
   mode,
   title,
   content,
-  setContent,
-  categories,
-  setTitle,
-  setCategoryName,
   selectCategories,
   handleDeleteArticle,
   thumbnailUrl,
-  setThumbnailUrl,
   onSubmit,
 }: FormProps) => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<AdminPost>();
+
+  // カテゴリー一覧取得
+  const { data: categories } = useDataFetch<Category>(
+    "http://localhost:3000/api/admin/categories"
+  );
+
+  useEffect(() => {
+    reset({
+      title,
+      content,
+      thumbnailUrl,
+      categories: String(selectCategories),
+    });
+  }, [title, content, thumbnailUrl, selectCategories]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -52,8 +59,6 @@ export const AdminPostForm = ({
             required: "タイトルを入力してください",
             minLength: { value: 2, message: "2文字以上入力してください" },
           })}
-          onChange={(e) => setTitle?.(e.target.value)}
-          value={title}
         />
         {errors.title && <p className="text-red-700">{errors.title.message}</p>}
       </div>
@@ -69,8 +74,6 @@ export const AdminPostForm = ({
             required: "内容を入力してください",
             minLength: { value: 10, message: "10文字以上入力してください" },
           })}
-          onChange={(e) => setContent?.(e.target.value)}
-          value={content}
         />
         {errors.content && (
           <p className="text-red-700">{errors.content.message}</p>
@@ -89,8 +92,6 @@ export const AdminPostForm = ({
           {...register("thumbnailUrl", {
             required: "サムネイルURLを入力してください",
           })}
-          onChange={(e) => setThumbnailUrl?.(e.target.value)}
-          value={thumbnailUrl}
         />
         {errors.thumbnailUrl && (
           <p className="text-red-700">{errors.thumbnailUrl.message}</p>
@@ -101,7 +102,7 @@ export const AdminPostForm = ({
           カテゴリー
           <span className="inline-block ml-1 text-red-500">※</span>
         </label>
-        {categories.length > 0 ? (
+        {(categories?.categories ?? []).length > 0 ? (
           <>
             <select
               className="border rounded h-14 p-2"
@@ -110,16 +111,8 @@ export const AdminPostForm = ({
               {...register("categories", {
                 required: "カテゴリーを選択してください",
               })}
-              onChange={(e) => {
-                const SelectOptions = Array.from(e.target.selectedOptions).map(
-                  (option) => ({
-                    id: parseInt(option.value),
-                  })
-                );
-                setCategoryName(SelectOptions);
-              }}
             >
-              {categories.map((category) => (
+              {categories?.categories.map((category) => (
                 <option
                   key={category.id}
                   value={category.id}
