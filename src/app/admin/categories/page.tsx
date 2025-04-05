@@ -6,7 +6,7 @@ import { useDataFetch } from "@/app/_hooks/useDataFetch";
 
 const AdminCategories: React.FC = () => {
   const { data, error, isLoading } = useDataFetch<Category>(
-    "http://localhost:3000/api/admin/categories"
+    "/admin/categories"
   );
 
   if (isLoading) return <div>読み込み中...</div>;

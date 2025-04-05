@@ -10,7 +10,7 @@ const AdminEditCategories = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
 
   // カテゴリー取得
-  const { data } = useDataFetch<Category>(`http://localhost:3000/api/admin/categories/${params.id}`);
+  const { data } = useDataFetch<Category>(`/admin/categories/${params.id}`);
 
   const onSubmit: SubmitHandler<Category> = async (data) => {
     const { name } = data;

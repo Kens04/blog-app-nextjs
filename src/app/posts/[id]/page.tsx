@@ -6,7 +6,7 @@ import Image from "next/image";
 
 const PostDetail = ({ params }: { params: { id: string } }) => {
   const { data, error, isLoading } = useDataFetch<Post>(
-    `http://localhost:3000/api/posts/${params.id}`
+    `/posts/${params.id}`
   );
 
   if (isLoading) return <div>読み込み中...</div>;

@@ -12,7 +12,7 @@ const AdminPostDetail = ({ params }: { params: { id: string } }) => {
 
   // 記事詳細取得
   const { data: posts } = useDataFetch<Post>(
-    `http://localhost:3000/api/admin/posts/${params.id}`
+    `/admin/posts/${params.id}`
   );
 
   const categoryId = posts?.post.postCategories.map(

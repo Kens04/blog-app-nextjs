@@ -7,7 +7,7 @@ async function fetcher(key: string) {
 }
 
 export const useDataFetch = <T>(path: string) => {
-  const { data, error, isLoading } = useSWR<T>(path, fetcher);
+  const { data, error, isLoading } = useSWR<T>(`/api${path}`, fetcher);
 
   return {
     data,

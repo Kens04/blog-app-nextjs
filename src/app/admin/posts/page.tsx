@@ -6,7 +6,7 @@ import { useDataFetch } from "@/app/_hooks/useDataFetch";
 
 const AdminPosts: React.FC = () => {
   const { data, error, isLoading } = useDataFetch<Post>(
-    "http://localhost:3000/api/admin/posts"
+    "/admin/posts"
   );
 
   if (error) return <div>読み込みに失敗しました。</div>;

@@ -32,7 +32,7 @@ export const AdminPostForm = ({
 
   // カテゴリー一覧取得
   const { data: categories } = useDataFetch<Category>(
-    "http://localhost:3000/api/admin/categories"
+    "/admin/categories"
   );
 
   useEffect(() => {
