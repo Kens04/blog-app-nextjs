@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { Category } from "./_types/Category";
-import { useDataFetch } from "@/app/_hooks/useDataFetch";
+import { useAdminDataFetch } from "@/app/_hooks/useAdminDataFetch";
 
 const AdminCategories: React.FC = () => {
-  const { data, error, isLoading } = useDataFetch<Category>(
-    "/admin/categories"
-  );
+  const { data, error, isLoading } =
+  useAdminDataFetch<Category>("/admin/categories");
 
   if (isLoading) return <div>読み込み中...</div>;
   if (error) return <div>読み込みに失敗しました。</div>;

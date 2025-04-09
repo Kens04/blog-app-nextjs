@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { Post } from "./_types/Post";
-import { useDataFetch } from "@/app/_hooks/useDataFetch";
+import { useAdminDataFetch } from "@/app/_hooks/useAdminDataFetch";
 
 const AdminPosts: React.FC = () => {
-  const { data, error, isLoading } = useDataFetch<Post>(
-    "/admin/posts"
-  );
+  const { data, error, isLoading } = useAdminDataFetch<Post>("/admin/posts");
 
   if (error) return <div>読み込みに失敗しました。</div>;
   if (isLoading) return <div>読み込み中...</div>;

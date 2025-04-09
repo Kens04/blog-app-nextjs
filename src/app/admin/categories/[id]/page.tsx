@@ -4,29 +4,26 @@ import { useRouter } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
 import { Category } from "../_types/Category";
 import { AdminCategoryForm } from "../_components/AdminCategoryForm";
-import { useDataFetch } from "@/app/_hooks/useDataFetch";
+import { useAdminDataFetch } from "@/app/_hooks/useAdminDataFetch";
 
 const AdminEditCategories = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
 
   // カテゴリー取得
-  const { data } = useDataFetch<Category>(`/admin/categories/${params.id}`);
+  const { data } = useAdminDataFetch<Category>(`/admin/categories/${params.id}`);
 
   const onSubmit: SubmitHandler<Category> = async (data) => {
     const { name } = data;
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/admin/categories/${params.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-          }),
-        }
-      );
+      const res = await fetch(`/api/admin/categories/${params.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+        }),
+      });
 
       if (res.ok) {
         router.push("/admin/categories");
@@ -38,12 +35,9 @@ const AdminEditCategories = ({ params }: { params: { id: string } }) => {
 
   const handleDeleteCategory = async () => {
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/admin/categories/${params.id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const res = await fetch(`/api/admin/categories/${params.id}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         router.push("/admin/categories");
       }
