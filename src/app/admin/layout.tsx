@@ -39,7 +39,7 @@ export default function AdminLayout({
       </aside>
 
       {/* メインエリア */}
-      <div className="ml-[280px] p-4">{children}</div>
+      <div className="ml-[280px] mt-[72px] p-4">{children}</div>
     </>
   );
 }
