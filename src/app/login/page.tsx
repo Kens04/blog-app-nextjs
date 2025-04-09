@@ -1,17 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { supabase } from "../_utils/supabase";
+import { useForm } from "react-hook-form";
+import { Login } from "./_types/login";
 
 export default function Page() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Login>();
   const router = useRouter();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const onSubmit = async (data: Login) => {
+    const { email, password } = data;
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -26,7 +29,10 @@ export default function Page() {
 
   return (
     <div className="flex justify-center pt-[240px]">
-      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-[400px]">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-4 w-full max-w-[400px]"
+      >
         <div>
           <label
             htmlFor="email"
@@ -36,13 +42,16 @@ export default function Page() {
           </label>
           <input
             type="email"
-            name="email"
             id="email"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             placeholder="name@company.com"
-            required
-            onChange={(e) => setEmail(e.target.value)}
+            {...register("email", {
+              required: "メールアドレスを入力してください",
+            })}
           />
+          {errors.email && (
+            <p className="text-red-700">{errors.email.message}</p>
+          )}
         </div>
         <div>
           <label
@@ -53,13 +62,17 @@ export default function Page() {
           </label>
           <input
             type="password"
-            name="password"
             id="password"
             placeholder="••••••••"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            required
-            onChange={(e) => setPassword(e.target.value)}
+            {...register("password", {
+              required: "パスワードを入力してください",
+              minLength: { value: 6, message: "6文字以上入力してください" },
+            })}
           />
+          {errors.password && (
+            <p className="text-red-700">{errors.password.message}</p>
+          )}
         </div>
 
         <div>
