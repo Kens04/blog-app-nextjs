@@ -11,14 +11,14 @@ export const Header: React.FC = () => {
     window.location.href = "/";
   };
 
-  const { session, isLoding } = useSupabaseSession();
+  const { session, isLoading } = useSupabaseSession();
 
   return (
     <header className="bg-gray-800 text-white p-6 font-bold flex justify-between items-center">
       <Link href="/" className="header-link">
         Blog
       </Link>
-      {!isLoding && (
+      {!isLoading && (
         <div className="flex items-center gap-4">
           {session ? (
             <>
