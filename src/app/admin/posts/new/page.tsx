@@ -18,7 +18,7 @@ const AdminPostNew: React.FC = () => {
     }));
 
     try {
-      const res = await fetch("http://localhost:3000/api/admin/posts", {
+      const res = await fetch("/api/admin/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,7 +27,7 @@ const AdminPostNew: React.FC = () => {
           title,
           content,
           categories: arrayCategories,
-          thumbnailUrl,
+          thumbnailImageKey: thumbnailUrl,
         }),
       });
 
@@ -43,10 +43,7 @@ const AdminPostNew: React.FC = () => {
     <div className="p-5 w-full">
       <h2 className="text-xl font-bold">記事作成</h2>
       <div className="mt-5">
-        <AdminPostForm
-          mode="作成"
-          onSubmit={onSubmit}
-        />
+        <AdminPostForm mode="作成" onSubmit={onSubmit} />
       </div>
     </div>
   );

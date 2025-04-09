@@ -10,7 +10,7 @@ const AdminCreateCategories: React.FC = () => {
   const onSubmit: SubmitHandler<Category> = async (data) => {
     const { name } = data;
     try {
-      const res = await fetch("http://localhost:3000/api/admin/categories", {
+      const res = await fetch("/api/admin/categories", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
