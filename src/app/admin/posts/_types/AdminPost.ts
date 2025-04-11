@@ -6,5 +6,5 @@ export interface AdminPost {
   categories: Category[] | string & string[];
   categoryName: object;
   thumbnailUrl: string;
-  thumbnailImageKey: string;
+  thumbnailImageUrl: string;
 }
