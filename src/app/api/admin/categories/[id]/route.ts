@@ -1,6 +1,6 @@
-import { supabase } from "@/app/_utils/supabase";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "../../_utils/supabase";
 
 const prisma = new PrismaClient();
 
@@ -12,17 +12,16 @@ export const GET = async (
   request: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  const token = request.headers.get("Authorization") ?? "";
-
-  // supabaseに対してtokenを送る
-  const { error } = await supabase.auth.getUser(token);
+  const { error } = await getCurrentUser(request);
 
   // 送ったtokenが正しくない場合、errorが返却されるので、クライアントにもエラーを返す
-  if (error)
+  if (error) {
     return NextResponse.json({ status: error.message }, { status: 400 });
+  }
 
-  const { id } = params;
   // tokenが正しい場合、以降が実行される
+  const { id } = params;
+
   try {
     const category = await prisma.category.findUnique({
       where: {
@@ -45,6 +44,13 @@ export const PUT = async (
   request: NextRequest,
   { params }: { params: { id: string } }
 ) => {
+  const { error } = await getCurrentUser(request);
+
+  // 送ったtokenが正しくない場合、errorが返却されるので、クライアントにもエラーを返す
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+  // tokenが正しい場合、以降が実行される
   const { id } = params;
 
   const { name }: UpdateCategoryRequestBody = await request.json();
@@ -74,6 +80,13 @@ export const DELETE = async (
   request: NextRequest,
   { params }: { params: { id: string } }
 ) => {
+  const { error } = await getCurrentUser(request);
+
+  // 送ったtokenが正しくない場合、errorが返却されるので、クライアントにもエラーを返す
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+  // tokenが正しい場合、以降が実行される
   const { id } = params;
 
   try {

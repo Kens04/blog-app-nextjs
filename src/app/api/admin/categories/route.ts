@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { supabase } from "@/app/_utils/supabase";
+import { getCurrentUser } from "../_utils/supabase";
 
 const prisma = new PrismaClient();
 
@@ -10,15 +10,12 @@ interface CreateCategoryRequestBody {
 }
 
 export const GET = async (request: NextRequest) => {
-  const token = request.headers.get("Authorization") ?? "";
-
-  // supabaseに対してtokenを送る
-  const { error } = await supabase.auth.getUser(token);
+  const { error } = await getCurrentUser(request);
 
   // 送ったtokenが正しくない場合、errorが返却されるので、クライアントにもエラーを返す
-  if (error)
+  if (error) {
     return NextResponse.json({ status: error.message }, { status: 400 });
-
+  }
   // tokenが正しい場合、以降が実行される
   try {
     // カテゴリーの一覧をDBから取得
@@ -37,6 +34,13 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: Request, context: any) => {
+  const { error } = await getCurrentUser(request);
+
+  // 送ったtokenが正しくない場合、errorが返却されるので、クライアントにもエラーを返す
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+  // tokenが正しい場合、以降が実行される
   try {
     // リクエストのbodyを取得
     const body = await request.json();
