@@ -9,7 +9,7 @@ export default function Page() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<Login>();
   const router = useRouter();
 
@@ -48,6 +48,7 @@ export default function Page() {
             {...register("email", {
               required: "メールアドレスを入力してください",
             })}
+            disabled={isSubmitting}
           />
           {errors.email && (
             <p className="text-red-700">{errors.email.message}</p>
@@ -69,6 +70,7 @@ export default function Page() {
               required: "パスワードを入力してください",
               minLength: { value: 6, message: "6文字以上入力してください" },
             })}
+            disabled={isSubmitting}
           />
           {errors.password && (
             <p className="text-red-700">{errors.password.message}</p>
@@ -78,7 +80,12 @@ export default function Page() {
         <div>
           <button
             type="submit"
-            className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            disabled={isSubmitting || !isValid}
+            className={`${
+              isSubmitting || !isValid
+                ? "bg-gray-300 text-black pointer-events-none"
+                : "bg-blue-700 hover:bg-blue-800 text-white"
+            } w-full focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center`}
           >
             ログイン
           </button>
