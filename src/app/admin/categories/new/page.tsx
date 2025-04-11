@@ -4,16 +4,19 @@ import { useRouter } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
 import { Category } from "../_types/Category";
 import { AdminCategoryForm } from "../_components/AdminCategoryForm";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 const AdminCreateCategories: React.FC = () => {
+  const { token } = useSupabaseSession();
   const router = useRouter();
   const onSubmit: SubmitHandler<Category> = async (data) => {
     const { name } = data;
     try {
-      const res = await fetch("http://localhost:3000/api/admin/categories", {
+      const res = await fetch("/api/admin/categories", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token!,
         },
         body: JSON.stringify({
           name,

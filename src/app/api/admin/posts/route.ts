@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { supabase } from "@/app/_utils/supabase";
+import { getCurrentUser } from "../_utils/supabase";
 
 const prisma = new PrismaClient();
 
@@ -8,25 +10,36 @@ interface CreatePostRequestBody {
   title: string;
   content: string;
   categories: { id: number }[];
-  thumbnailUrl: string;
+  thumbnailImageKey: string;
 }
 
 // POSTという命名にすることで、POSTリクエストの時にこの関数が呼ばれる
 export const POST = async (request: NextRequest, context: any) => {
+  const { error } = await getCurrentUser(request);
+
+  // 送ったtokenが正しくない場合、errorが返却されるので、クライアントにもエラーを返す
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+  // tokenが正しい場合、以降が実行される
   try {
     // リクエストのbodyを取得
     const body = await request.json();
 
-    // bodyの中からtitle, content, categories, thumbnailUrlを取り出す
-    const { title, content, categories, thumbnailUrl }: CreatePostRequestBody =
-      body;
+    // bodyの中からtitle, content, categories, thumbnailImageKeyを取り出す
+    const {
+      title,
+      content,
+      categories,
+      thumbnailImageKey,
+    }: CreatePostRequestBody = body;
 
     // 投稿をDBに生成
     const data = await prisma.post.create({
       data: {
         title,
         content,
-        thumbnailUrl,
+        thumbnailImageKey,
       },
     });
 
@@ -55,6 +68,13 @@ export const POST = async (request: NextRequest, context: any) => {
 };
 
 export const GET = async (request: NextRequest) => {
+  const { error } = await getCurrentUser(request);
+
+  // 送ったtokenが正しくない場合、errorが返却されるので、クライアントにもエラーを返す
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+  // tokenが正しい場合、以降が実行される
   try {
     const posts = await prisma.post.findMany({
       include: {

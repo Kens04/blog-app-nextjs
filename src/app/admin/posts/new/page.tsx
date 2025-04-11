@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
 import { AdminPost } from "../_types/AdminPost";
 import { AdminPostForm } from "../_components/AdminPostForm";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 const AdminPostNew: React.FC = () => {
+  const { token } = useSupabaseSession();
   const router = useRouter();
 
   const onSubmit: SubmitHandler<AdminPost> = async (data) => {
@@ -18,16 +20,17 @@ const AdminPostNew: React.FC = () => {
     }));
 
     try {
-      const res = await fetch("http://localhost:3000/api/admin/posts", {
+      const res = await fetch("/api/admin/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token!,
         },
         body: JSON.stringify({
           title,
           content,
           categories: arrayCategories,
-          thumbnailUrl,
+          thumbnailImageKey: thumbnailUrl,
         }),
       });
 
@@ -43,10 +46,7 @@ const AdminPostNew: React.FC = () => {
     <div className="p-5 w-full">
       <h2 className="text-xl font-bold">記事作成</h2>
       <div className="mt-5">
-        <AdminPostForm
-          mode="作成"
-          onSubmit={onSubmit}
-        />
+        <AdminPostForm mode="作成" onSubmit={onSubmit} />
       </div>
     </div>
   );

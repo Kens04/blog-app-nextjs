@@ -6,7 +6,7 @@ export interface Post {
   postCategories: {
     category: { name: string };
   }[];
-  thumbnailUrl: string;
+  thumbnailImageKey: string;
   posts: Post[];
   post: Post;
 }

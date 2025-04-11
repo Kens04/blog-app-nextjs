@@ -20,7 +20,7 @@ export const AdminCategoryForm = ({
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<Category>();
 
   useEffect(() => {
@@ -45,6 +45,7 @@ export const AdminCategoryForm = ({
             required: "カテゴリー名を入力してください",
             minLength: { value: 2, message: "2文字以上入力してください" },
           })}
+          disabled={isSubmitting}
         />
         {errors.name && <p className="text-red-700">{errors.name.message}</p>}
       </div>
@@ -53,12 +54,16 @@ export const AdminCategoryForm = ({
           <>
             <button
               type="submit"
-              className="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition"
+              disabled={isSubmitting || !isValid}
+              className={`${
+                isSubmitting || !isValid ? "bg-gray-300 text-black pointer-events-none" : "bg-blue-500"
+              } text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition`}
             >
               更新
             </button>
             <button
               type="button"
+              disabled={isSubmitting}
               onClick={onDeleteCategory}
               className="bg-red-500 text-white py-2 px-4 rounded font-bold hover:bg-red-700 transition"
             >
@@ -68,7 +73,10 @@ export const AdminCategoryForm = ({
         ) : (
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition"
+            disabled={isSubmitting || !isValid}
+            className={`${
+              isSubmitting || !isValid ? "bg-gray-300 text-black pointer-events-none" : "bg-blue-500"
+            } text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition`}
           >
             作成
           </button>

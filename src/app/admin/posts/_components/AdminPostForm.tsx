@@ -1,8 +1,11 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { AdminPost } from "../_types/AdminPost";
 import { Category } from "../../categories/_types/Category";
-import { useEffect } from "react";
-import { useDataFetch } from "@/app/_hooks/useDataFetch";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useAdminDataFetch } from "@/app/_hooks/useAdminDataFetch";
+import { supabase } from "@/app/_utils/supabase";
+import { v4 as uuidv4 } from "uuid"; // 固有IDを生成するライブラリ
+import Image from "next/image";
 
 interface FormProps {
   mode: string;
@@ -27,13 +30,17 @@ export const AdminPostForm = ({
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    setValue,
+    formState: { errors, isSubmitting, isValid },
   } = useForm<AdminPost>();
+  // Imageタグのsrcにセットする画像URLを持たせるstate
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
   // カテゴリー一覧取得
-  const { data: categories } = useDataFetch<Category>(
-    "/admin/categories"
-  );
+  const { data: categories } = useAdminDataFetch<Category>("/admin/categories");
 
   useEffect(() => {
     reset({
@@ -42,7 +49,61 @@ export const AdminPostForm = ({
       thumbnailUrl,
       categories: String(selectCategories),
     });
+
+    if (!thumbnailUrl) return; // アップロード時に取得した、thumbnailUrlを用いて画像のURLを取得
+
+    const fetcher = async () => {
+      const {
+        data: { publicUrl },
+      } = await supabase.storage
+        .from("post-thumbnail")
+        .getPublicUrl(thumbnailUrl);
+
+      setThumbnailImageUrl(publicUrl);
+    };
+
+    fetcher();
   }, [title, content, thumbnailUrl, selectCategories]);
+
+  const handleImageChange = async (
+    event: ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    if (!event.target.files || event.target.files.length == 0) {
+      // 画像が選択されていないのでreturn
+      return;
+    }
+
+    setIsLoading(true);
+    const file = event.target.files[0]; // 選択された画像を取得
+    const filePath = `private/${uuidv4()}`; // ファイルパスを指定
+    // Supabaseに画像をアップロード
+    const { data, error } = await supabase.storage
+      .from("post-thumbnail") // ここでバケット名を指定
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    // アップロードに失敗したらエラーを表示して終了
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setValue("thumbnailUrl", data.path);
+
+    const fetcher = async () => {
+      const {
+        data: { publicUrl },
+      } = await supabase.storage.from("post-thumbnail").getPublicUrl(data.path);
+
+      setThumbnailImageUrl(publicUrl);
+    };
+
+    fetcher();
+
+    setIsLoading(false);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -59,6 +120,7 @@ export const AdminPostForm = ({
             required: "タイトルを入力してください",
             minLength: { value: 2, message: "2文字以上入力してください" },
           })}
+          disabled={isSubmitting}
         />
         {errors.title && <p className="text-red-700">{errors.title.message}</p>}
       </div>
@@ -74,27 +136,39 @@ export const AdminPostForm = ({
             required: "内容を入力してください",
             minLength: { value: 10, message: "10文字以上入力してください" },
           })}
+          disabled={isSubmitting}
         />
         {errors.content && (
           <p className="text-red-700">{errors.content.message}</p>
         )}
       </div>
       <div className="flex flex-col mt-4">
-        <label htmlFor="thumbnailUrl">
+        <label htmlFor="thumbnailImageKey">
           サムネイルURL
           <span className="inline-block ml-1 text-red-500">※</span>
         </label>
         <input
-          className="border rounded h-12 p-2"
-          id="thumbnailUrl"
-          type="text"
-          placeholder="サムネイルURLを入力してください"
-          {...register("thumbnailUrl", {
-            required: "サムネイルURLを入力してください",
+          type="file"
+          id="thumbnailImageKey"
+          {...register("thumbnailImageUrl", {
+            required: "サムネイル画像をアップロードしてください",
+            onChange: handleImageChange,
           })}
+          accept="image/*"
+          disabled={isLoading || isSubmitting}
         />
-        {errors.thumbnailUrl && (
-          <p className="text-red-700">{errors.thumbnailUrl.message}</p>
+        {errors.thumbnailImageUrl && (
+          <p className="text-red-700">{errors.thumbnailImageUrl.message}</p>
+        )}
+        {thumbnailImageUrl && (
+          <div className="mt-2">
+            <Image
+              src={thumbnailImageUrl}
+              alt="thumbnail"
+              width={400}
+              height={400}
+            />
+          </div>
         )}
       </div>
       <div className="flex flex-col mt-4">
@@ -111,6 +185,7 @@ export const AdminPostForm = ({
               {...register("categories", {
                 required: "カテゴリーを選択してください",
               })}
+              disabled={isSubmitting}
             >
               {categories?.categories.map((category) => (
                 <option
@@ -135,12 +210,16 @@ export const AdminPostForm = ({
           <>
             <button
               type="submit"
-              className="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition"
+              disabled={isSubmitting || !isValid}
+              className={`${
+                isSubmitting || !isValid ? "bg-gray-300 text-black pointer-events-none" : "bg-blue-500"
+              } text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition`}
             >
               更新
             </button>
             <button
               type="submit"
+              disabled={isSubmitting}
               onClick={handleDeleteArticle}
               className="bg-red-500 text-white py-2 px-4 rounded font-bold hover:bg-red-700 transition"
             >
@@ -150,7 +229,10 @@ export const AdminPostForm = ({
         ) : (
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition"
+            disabled={isSubmitting || !isValid}
+            className={`${
+              isSubmitting || !isValid ? "bg-gray-300 text-black pointer-events-none" : "bg-blue-500"
+            } text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition`}
           >
             作成
           </button>

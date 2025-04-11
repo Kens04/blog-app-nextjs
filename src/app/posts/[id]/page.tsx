@@ -2,12 +2,30 @@
 
 import { useDataFetch } from "@/app/_hooks/useDataFetch";
 import { Post } from "@/app/_types/Post";
+import { supabase } from "@/app/_utils/supabase";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const PostDetail = ({ params }: { params: { id: string } }) => {
-  const { data, error, isLoading } = useDataFetch<Post>(
-    `/posts/${params.id}`
-  );
+  // Imageタグのsrcにセットする画像URLを持たせるstate
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<string>("");
+  const { data, error, isLoading } = useDataFetch<Post>(`/posts/${params.id}`);
+  const thumbnailUrl = data?.post.thumbnailImageKey;
+
+  useEffect(() => {
+    if (!thumbnailUrl) return; // アップロード時に取得した、thumbnailImageKeyを用いて画像のURLを取
+    const fetcher = async () => {
+      const {
+        data: { publicUrl },
+      } = await supabase.storage
+        .from("post-thumbnail")
+        .getPublicUrl(thumbnailUrl);
+
+      setThumbnailImageUrl(publicUrl);
+    };
+
+    fetcher();
+  }, [thumbnailUrl]);
 
   if (isLoading) return <div>読み込み中...</div>;
   if (!data) return <div>記事が見つかりません</div>;
@@ -18,7 +36,7 @@ const PostDetail = ({ params }: { params: { id: string } }) => {
       <div>
         <div>
           <Image
-            src={data.post.thumbnailUrl}
+            src={thumbnailImageUrl}
             alt={data.post.title}
             height={400}
             width={800}

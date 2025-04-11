@@ -5,7 +5,7 @@ export interface Post {
   postCategories: {
     category: { id: string };
   }[];
-  thumbnailUrl: string;
+  thumbnailImageKey: string;
   createdAt: Date;
   updatedAt: Date;
   posts: Post[];
