@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
 import { AdminPost } from "../_types/AdminPost";
 import { AdminPostForm } from "../_components/AdminPostForm";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 const AdminPostNew: React.FC = () => {
+  const { token } = useSupabaseSession();
   const router = useRouter();
 
   const onSubmit: SubmitHandler<AdminPost> = async (data) => {
@@ -22,6 +24,7 @@ const AdminPostNew: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token!,
         },
         body: JSON.stringify({
           title,

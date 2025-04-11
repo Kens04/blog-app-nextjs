@@ -6,8 +6,10 @@ import { AdminPost } from "../_types/AdminPost";
 import { AdminPostForm } from "../_components/AdminPostForm";
 import { Post } from "../_types/Post";
 import { useAdminDataFetch } from "@/app/_hooks/useAdminDataFetch";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 const AdminPostDetail = ({ params }: { params: { id: string } }) => {
+  const { token } = useSupabaseSession();
   const router = useRouter();
 
   // 記事詳細取得
@@ -29,6 +31,7 @@ const AdminPostDetail = ({ params }: { params: { id: string } }) => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token!,
         },
         body: JSON.stringify({
           title,
@@ -49,6 +52,9 @@ const AdminPostDetail = ({ params }: { params: { id: string } }) => {
     try {
       const res = await fetch(`/api/admin/posts/${params.id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: token!,
+        },
       });
       if (res.ok) {
         router.push("/admin/posts");
