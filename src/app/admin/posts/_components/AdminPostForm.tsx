@@ -31,13 +31,13 @@ export const AdminPostForm = ({
     handleSubmit,
     reset,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<AdminPost>();
-  const [thumbnailImageKey, setThumbnailImageKey] = useState("");
   // Imageタグのsrcにセットする画像URLを持たせるstate
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
     null
   );
+  const [isLoading, setIsLoading] = useState(false);
 
   // カテゴリー一覧取得
   const { data: categories } = useAdminDataFetch<Category>("/admin/categories");
@@ -50,7 +50,7 @@ export const AdminPostForm = ({
       categories: String(selectCategories),
     });
 
-    if (!thumbnailUrl) return; // アップロード時に取得した、thumbnailImageKeyを用いて画像のURLを取得
+    if (!thumbnailUrl) return; // アップロード時に取得した、thumbnailUrlを用いて画像のURLを取得
 
     const fetcher = async () => {
       const {
@@ -73,6 +73,7 @@ export const AdminPostForm = ({
       return;
     }
 
+    setIsLoading(true);
     const file = event.target.files[0]; // 選択された画像を取得
     const filePath = `private/${uuidv4()}`; // ファイルパスを指定
     // Supabaseに画像をアップロード
@@ -89,25 +90,20 @@ export const AdminPostForm = ({
       return;
     }
 
-    // data.pathに、画像固有のkeyが入っているので、thumbnailImageKeyに格納する
-    setThumbnailImageKey(data.path);
-  };
+    setValue("thumbnailUrl", data.path);
 
-  useEffect(() => {
-    if (!thumbnailImageKey) return; // アップロード時に取得した、thumbnailImageKeyを用いて画像のURLを取得
-    setValue("thumbnailUrl", thumbnailImageKey);
     const fetcher = async () => {
       const {
         data: { publicUrl },
-      } = await supabase.storage
-        .from("post-thumbnail")
-        .getPublicUrl(thumbnailImageKey);
+      } = await supabase.storage.from("post-thumbnail").getPublicUrl(data.path);
 
       setThumbnailImageUrl(publicUrl);
     };
 
     fetcher();
-  }, [thumbnailImageKey, setValue]);
+
+    setIsLoading(false);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -124,6 +120,7 @@ export const AdminPostForm = ({
             required: "タイトルを入力してください",
             minLength: { value: 2, message: "2文字以上入力してください" },
           })}
+          disabled={isSubmitting}
         />
         {errors.title && <p className="text-red-700">{errors.title.message}</p>}
       </div>
@@ -139,6 +136,7 @@ export const AdminPostForm = ({
             required: "内容を入力してください",
             minLength: { value: 10, message: "10文字以上入力してください" },
           })}
+          disabled={isSubmitting}
         />
         {errors.content && (
           <p className="text-red-700">{errors.content.message}</p>
@@ -152,14 +150,15 @@ export const AdminPostForm = ({
         <input
           type="file"
           id="thumbnailImageKey"
-          {...register("thumbnailImageKey", {
+          {...register("thumbnailImageUrl", {
             required: "サムネイル画像をアップロードしてください",
             onChange: handleImageChange,
           })}
           accept="image/*"
+          disabled={isLoading || isSubmitting}
         />
-        {errors.thumbnailImageKey && (
-          <p className="text-red-700">{errors.thumbnailImageKey.message}</p>
+        {errors.thumbnailImageUrl && (
+          <p className="text-red-700">{errors.thumbnailImageUrl.message}</p>
         )}
         {thumbnailImageUrl && (
           <div className="mt-2">
@@ -186,6 +185,7 @@ export const AdminPostForm = ({
               {...register("categories", {
                 required: "カテゴリーを選択してください",
               })}
+              disabled={isSubmitting}
             >
               {categories?.categories.map((category) => (
                 <option
@@ -210,12 +210,16 @@ export const AdminPostForm = ({
           <>
             <button
               type="submit"
-              className="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition"
+              disabled={isSubmitting || !isValid}
+              className={`${
+                isSubmitting || !isValid ? "bg-gray-300 text-black pointer-events-none" : "bg-blue-500"
+              } text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition`}
             >
               更新
             </button>
             <button
               type="submit"
+              disabled={isSubmitting}
               onClick={handleDeleteArticle}
               className="bg-red-500 text-white py-2 px-4 rounded font-bold hover:bg-red-700 transition"
             >
@@ -225,7 +229,10 @@ export const AdminPostForm = ({
         ) : (
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition"
+            disabled={isSubmitting || !isValid}
+            className={`${
+              isSubmitting || !isValid ? "bg-gray-300 text-black pointer-events-none" : "bg-blue-500"
+            } text-white py-2 px-4 rounded font-bold hover:bg-blue-700 transition`}
           >
             作成
           </button>
